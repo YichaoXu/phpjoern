@@ -94,7 +94,7 @@ class CSVExporter extends Exporter {
       $funcid, $classname, $namespace, $endlineno, $name, $doccomment
     ];
     $safe_fields = array_map('safe_utf8', $fields);
-    fwrite( $this->nhandle, implode($this->csv_delim, $clean_fields)."\n");
+    fwrite( $this->nhandle, implode($this->csv_delim, $safe_fields)."\n");
 
     // return the current node index, *then* increment it
     return $this->nodecount++;
