@@ -2,6 +2,11 @@
 
 require_once 'Exporter.php';
 
+function safe_utf8($str) {
+  $str = str_replace("\n", " ", str_replace("\t", " ", $str));
+  return mb_convert_encoding($str ?? '', 'UTF-8', 'auto');
+}
+
 /**
  * This class exports ASTs into two CSV files, one for nodes and one
  * for edges. The concrete syntax for these CSV files comes in two
@@ -84,8 +89,12 @@ class CSVExporter extends Exporter {
    * counter.
    */
   protected function store_node( $label, $type, $flags, $lineno, $code = null, $childnum = null, $funcid = null, $classname = null, $namespace = null, $endlineno = null, $name = null, $doccomment = null) : int {
-
-    fwrite( $this->nhandle, "{$this->nodecount}{$this->csv_delim}{$label}{$this->csv_delim}{$type}{$this->csv_delim}{$flags}{$this->csv_delim}{$lineno}{$this->csv_delim}{$code}{$this->csv_delim}{$childnum}{$this->csv_delim}{$funcid}{$this->csv_delim}{$classname}{$this->csv_delim}{$namespace}{$this->csv_delim}{$endlineno}{$this->csv_delim}{$name}{$this->csv_delim}{$doccomment}\n");
+    $fields = [
+      $this->nodecount, $label, $type, $flags, $lineno, $code, $childnum,
+      $funcid, $classname, $namespace, $endlineno, $name, $doccomment
+    ];
+    $safe_fields = array_map('safe_utf8', $fields);
+    fwrite( $this->nhandle, implode($this->csv_delim, $clean_fields)."\n");
 
     // return the current node index, *then* increment it
     return $this->nodecount++;
@@ -96,7 +105,8 @@ class CSVExporter extends Exporter {
    * Exporter class to export a relationship to a CSV file.
    */
   public function store_rel( $start, $end, $type) {
-
+    $fields = [$start, $end, $type];
+    $safe_fields = array_map('safe_utf8', $fields);
     fwrite( $this->rhandle, "{$start}{$this->csv_delim}{$end}{$this->csv_delim}{$type}\n");
   }
 
