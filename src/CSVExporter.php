@@ -1,10 +1,15 @@
 <?php declare( strict_types = 1);
-
+use Normalizer;
 require_once 'Exporter.php';
 
 function safe_utf8($str) {
-  $str = str_replace("\n", " ", str_replace("\t", " ", $str));
-  return mb_convert_encoding($str ?? '', 'UTF-8', 'auto');
+  if ($str === null) return '';
+  $str = str_replace(["\n", "\t"], " ", $str);
+  $str = mb_convert_encoding($str, 'UTF-8', ['UTF-8', 'ISO-8859-1', 'Windows-1252', 'UTF-16', 'UTF-32']);
+  $normalized = Normalizer::normalize($str, Normalizer::FORM_C);
+  $str = $normalized !== false ? $normalized : $str;
+  $str = str_replace("\x00", "", $str);
+  return $str;
 }
 
 /**
@@ -90,7 +95,7 @@ class CSVExporter extends Exporter {
    */
   protected function store_node( $label, $type, $flags, $lineno, $code = null, $childnum = null, $funcid = null, $classname = null, $namespace = null, $endlineno = null, $name = null, $doccomment = null) : int {
     $fields = [
-      $this->nodecount, $label, $type, $flags, $lineno, "", $childnum,
+      $this->nodecount, $label, $type, $flags, $lineno, $code, $childnum,
       $funcid, $classname, $namespace, $endlineno, $name, ""
     ];
     $safe_fields = array_map('safe_utf8', $fields);
