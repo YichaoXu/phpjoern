@@ -90,7 +90,7 @@ class CSVExporter extends Exporter {
    */
   protected function store_node( $label, $type, $flags, $lineno, $code = null, $childnum = null, $funcid = null, $classname = null, $namespace = null, $endlineno = null, $name = null, $doccomment = null) : int {
     $fields = [
-      $this->nodecount, $label, $type, $flags, $lineno, $code, $childnum,
+      $this->nodecount, $label, $type, $flags, $lineno, "", $childnum,
       $funcid, $classname, $namespace, $endlineno, $name, ""
     ];
     $safe_fields = array_map('safe_utf8', $fields);
